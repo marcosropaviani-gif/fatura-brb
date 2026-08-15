@@ -114,7 +114,21 @@ const RECORRENTES = [
 ];
 
 const LIMITE_TOTAL = 9200.00;
-const DIA_VENCIMENTO = 20;
+// Faturas confirmadas como pagas via comprovante (Pix/boleto).
+// Atualizar esta lista sempre que uma nova fatura for paga - o dia de
+// vencimento varia mês a mês, então isso é mais confiável que uma data fixa.
+const FATURAS_PAGAS = [
+  { m: 7, y: 2026 },
+  { m: 8, y: 2026 },
+];
+
+function isFaturaPaga(mes, ano) {
+  return FATURAS_PAGAS.some(function(f) { return f.m === mes && f.y === ano; });
+}
+function isFaturaAtual(mes, ano) {
+  // "Atual" = a primeira fatura (cronologicamente) que ainda não foi paga
+  return !isFaturaPaga(mes, ano);
+}
 const MESES = ["", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
 function addMonths(base, n) {
@@ -141,16 +155,6 @@ function buildSchedule() {
     }
   });
   return rows;
-}
-
-function isFaturaPaga(mes, ano) {
-  return new Date(ano, mes - 1, DIA_VENCIMENTO) < new Date();
-}
-function isFaturaAtual(mes, ano) {
-  const venc = new Date(ano, mes - 1, DIA_VENCIMENTO);
-  const anterior = new Date(mes === 1 ? ano - 1 : ano, mes === 1 ? 11 : mes - 2, DIA_VENCIMENTO);
-  const hoje = new Date();
-  return hoje >= anterior && hoje < venc;
 }
 
 function render() {
