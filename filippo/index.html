@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diário do Filippo · Sistema Paviani</title>
+<style>
+  :root {
+    --azul: #16345F; --azul-claro: #EAF1FA; --roxo: #6B4FA0; --texto: #23324A;
+    --febre: #C4482E; --ausencia: #A0522D; --comportamental: #B0356B;
+    --agitacao: #C99A1F; --sono: #2E86AB; --outro: #6B7C93;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #F4F7FB; color: var(--texto); padding: 20px 12px 60px;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; }
+  .breadcrumb { font-size: 12px; color: #6B7C93; margin-bottom: 12px; }
+  .breadcrumb a { color: #16345F; text-decoration: none; font-weight: 600; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  header {
+    background: #fff; border-radius: 16px; padding: 18px 20px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 1px 3px rgba(20,40,70,0.08); margin-bottom: 16px;
+  }
+  .icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--roxo), #4A3573);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 18px; flex-shrink: 0;
+  }
+  header h1 { font-size: 15px; margin: 0; }
+  header p { font-size: 12px; color: #6B7C93; margin: 4px 0 0; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; background: #fff; padding: 5px; border-radius: 12px; box-shadow: 0 1px 3px rgba(20,40,70,0.08); }
+  .tab {
+    flex: 1; text-align: center; padding: 9px 4px; border-radius: 9px;
+    font-size: 12.5px; font-weight: 600; color: #6B7C93; cursor: pointer; user-select: none;
+  }
+  .tab.active { background: var(--roxo); color: #fff; }
+
+  .dia-group { background: #fff; border-radius: 14px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(20,40,70,0.06); overflow: hidden; }
+  .dia-head { padding: 12px 16px; font-size: 13px; font-weight: 700; background: var(--azul-claro); color: var(--azul); }
+  .ocorrencia { padding: 12px 16px; border-top: 1px solid #EEF2F7; }
+  .ocorrencia:first-child { border-top: none; }
+  .oc-top { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+  .oc-hora { font-size: 11px; color: #8194AC; font-variant-numeric: tabular-nums; }
+  .tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; color: #fff; text-transform: uppercase; letter-spacing: .02em; }
+  .tag-febre { background: var(--febre); }
+  .tag-ausencia { background: var(--ausencia); }
+  .tag-comportamental { background: var(--comportamental); }
+  .tag-agitacao { background: var(--agitacao); }
+  .tag-sono { background: var(--sono); }
+  .tag-outro { background: var(--outro); }
+  .oc-desc { font-size: 13.5px; line-height: 1.4; }
+
+  table.resumo { width: 100%; border-collapse: collapse; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(20,40,70,0.06); font-size: 12.5px; }
+  table.resumo th, table.resumo td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #EEF2F7; }
+  table.resumo th { background: var(--azul-claro); color: var(--azul); font-size: 11px; text-transform: uppercase; }
+  table.resumo td:first-child, table.resumo th:first-child { text-align: left; font-weight: 600; }
+  table.resumo tr:last-child td { border-bottom: none; }
+  table.resumo tr.total-row td { font-weight: 700; background: #FAFBFD; }
+
+  .vazio { background: #fff; border-radius: 14px; padding: 28px 20px; text-align: center; color: #8194AC; font-size: 13px; box-shadow: 0 1px 2px rgba(20,40,70,0.06); }
+
+  footer { text-align: center; font-size: 11px; color: #8194AC; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="breadcrumb"><a href="../index.html">Sistema Paviani</a> / Filippo</div>
+  <header>
+    <div class="icon">🧩</div>
+    <div>
+      <h1>Diário do Filippo</h1>
+      <p>Registro de ocorrências para acompanhamento com a neurologista</p>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-view="dia">Diário</div>
+    <div class="tab" data-view="semana">Semanal</div>
+    <div class="tab" data-view="mes">Mensal</div>
+    <div class="tab" data-view="ano">Anual</div>
+  </div>
+
+  <div id="conteudo"></div>
+  <footer>Registrado via conversa com Claude, com data/hora de quando foi contado</footer>
+</div>
+
+<script>
+// ================================================================
+// Cada ocorrência: { id, tipo, descricao, dataHora }
+// tipo (um destes, ou "Outro" com descrição livre):
+//   "Febre" | "Crise de ausência" | "Crise comportamental" |
+//   "Agitação" | "Alteração de sono" | "Outro"
+// dataHora: ISO string de quando a ocorrência aconteceu
+// Para atualizar: adicione um item ao array OCORRENCIAS e comite.
+// ================================================================
+const OCORRENCIAS = [
+];
+
+const TAG_CLASS = {
+  "Febre": "tag-febre",
+  "Crise de ausência": "tag-ausencia",
+  "Crise comportamental": "tag-comportamental",
+  "Agitação": "tag-agitacao",
+  "Alteração de sono": "tag-sono",
+  "Outro": "tag-outro"
+};
+
+function fmtDiaLabel(d) {
+  const dias = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
+  return dias[d.getDay()] + ", " + d.toLocaleDateString("pt-BR");
+}
+function fmtHora(d) {
+  return d.toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"});
+}
+function dateKey(d) {
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function startOfWeek(d) {
+  const nd = new Date(d);
+  const day = (nd.getDay() + 6) % 7; // segunda = 0
+  nd.setDate(nd.getDate() - day);
+  nd.setHours(0,0,0,0);
+  return nd;
+}
+function weekKey(d) {
+  const s = startOfWeek(d);
+  return "Semana de " + s.toLocaleDateString("pt-BR");
+}
+function monthKey(d) {
+  const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  return meses[d.getMonth()] + "/" + d.getFullYear();
+}
+function yearKey(d) {
+  return String(d.getFullYear());
+}
+
+const TIPOS_ORDEM = ["Febre","Crise de ausência","Crise comportamental","Agitação","Alteração de sono","Outro"];
+
+function renderVazio(container) {
+  container.innerHTML = '<div class="vazio">Nenhuma ocorrência registrada ainda.<br>Conte uma ocorrência pra Claude na conversa que ela aparece aqui.</div>';
+}
+
+function renderDia(container) {
+  const porDia = {};
+  OCORRENCIAS.forEach(function(o) {
+    const d = new Date(o.dataHora);
+    const k = dateKey(d);
+    if (!porDia[k]) porDia[k] = { data: d, items: [] };
+    porDia[k].items.push(o);
+  });
+  const dias = Object.keys(porDia).sort().reverse();
+  dias.forEach(function(k) {
+    const grupo = porDia[k];
+    const div = document.createElement("div");
+    div.className = "dia-group";
+    const head = document.createElement("div");
+    head.className = "dia-head";
+    head.textContent = fmtDiaLabel(grupo.data);
+    div.appendChild(head);
+    grupo.items
+      .slice()
+      .sort(function(a,b){ return new Date(b.dataHora) - new Date(a.dataHora); })
+      .forEach(function(o) {
+        const d = new Date(o.dataHora);
+        const oc = document.createElement("div");
+        oc.className = "ocorrencia";
+        oc.innerHTML =
+          '<div class="oc-top">' +
+            '<span class="oc-hora">' + fmtHora(d) + '</span>' +
+            '<span class="tag ' + (TAG_CLASS[o.tipo] || "tag-outro") + '">' + o.tipo + '</span>' +
+          '</div>' +
+          '<div class="oc-desc">' + o.descricao + '</div>';
+        div.appendChild(oc);
+      });
+    container.appendChild(div);
+  });
+}
+
+function renderResumo(container, keyFn, labelSingular) {
+  const porPeriodo = {};
+  OCORRENCIAS.forEach(function(o) {
+    const d = new Date(o.dataHora);
+    const k = keyFn(d);
+    if (!porPeriodo[k]) porPeriodo[k] = {};
+    porPeriodo[k][o.tipo] = (porPeriodo[k][o.tipo] || 0) + 1;
+  });
+  const periodos = Object.keys(porPeriodo).sort().reverse();
+  const tiposPresentes = TIPOS_ORDEM.filter(function(t) {
+    return periodos.some(function(p){ return porPeriodo[p][t] > 0; });
+  });
+
+  const table = document.createElement("table");
+  table.className = "resumo";
+  let thead = "<tr><th>" + labelSingular + "</th>";
+  tiposPresentes.forEach(function(t) { thead += "<th>" + t + "</th>"; });
+  thead += "<th>Total</th></tr>";
+  table.innerHTML = "<thead>" + thead + "</thead>";
+
+  const tbody = document.createElement("tbody");
+  periodos.forEach(function(p) {
+    let total = 0;
+    let row = "<tr><td>" + p + "</td>";
+    tiposPresentes.forEach(function(t) {
+      const c = porPeriodo[p][t] || 0;
+      total += c;
+      row += "<td>" + (c || "–") + "</td>";
+    });
+    row += "<td>" + total + "</td></tr>";
+    tbody.innerHTML += row;
+  });
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+function render(view) {
+  const container = document.getElementById("conteudo");
+  container.innerHTML = "";
+
+  if (OCORRENCIAS.length === 0) {
+    renderVazio(container);
+    return;
+  }
+
+  if (view === "dia") renderDia(container);
+  else if (view === "semana") renderResumo(container, weekKey, "Semana");
+  else if (view === "mes") renderResumo(container, monthKey, "Mês");
+  else if (view === "ano") renderResumo(container, yearKey, "Ano");
+}
+
+document.querySelectorAll(".tab").forEach(function(tab) {
+  tab.onclick = function() {
+    document.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("active"); });
+    tab.classList.add("active");
+    render(tab.dataset.view);
+  };
+});
+
+render("dia");
+</script>
+</body>
+</html>
