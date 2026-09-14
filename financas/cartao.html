@@ -127,6 +127,9 @@ const COMPRAS = [
   { id: "p39", desc: "Kiwify (infoproduto)", parcelas: 3, valor: 89.22, primeiraFatura: {m:9,y:2026} },
   { id: "p40", desc: "Compra online (aprovada)", parcelas: 2, valor: 184.96, primeiraFatura: {m:9,y:2026} },
   { id: "p41", desc: "Superlegal (brinquedos)", parcelas: 3, valor: 41.66, primeiraFatura: {m:9,y:2026} },
+  { id: "p42", desc: "Avaliação Emergencial de Crédito (tarifa)", parcelas: 1, valor: 25.00, primeiraFatura: {m:9,y:2026} },
+  { id: "adj2", desc: "Ajuste de reconciliação com fatura oficial (setembro)", parcelas: 1, valor: 307.10, primeiraFatura: {m:9,y:2026} },
+  { id: "adj3", desc: "Ajuste de reconciliação com fatura oficial (pós-setembro)", parcelas: 1, valor: -172.05, primeiraFatura: {m:10,y:2026} },
 ];
 
 const RECORRENTES = [
@@ -160,6 +163,7 @@ function addMonths(base, n) {
 }
 function key(m,y) { return y + "-" + String(m).padStart(2,"0"); }
 function fmt(v) { return v.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtMoeda(v) { return v < 0 ? "-R$ " + fmt(Math.abs(v)) : "R$ " + fmt(v); }
 
 function buildSchedule() {
   const rows = [];
@@ -190,7 +194,9 @@ function render() {
 
   let comprometido = 0;
   schedule.forEach(function(it){ if (!isFaturaPaga(it.mes, it.ano)) comprometido += it.valor; });
-  document.getElementById("limiteDisp").textContent = "R$ " + fmt(LIMITE_TOTAL - comprometido);
+  document.getElementById("limiteDisp").textContent = fmtMoeda(LIMITE_TOTAL - comprometido);
+  const dispEl = document.getElementById("limiteDisp");
+  dispEl.style.color = (LIMITE_TOTAL - comprometido) < 0 ? "#C41E3A" : "#2E9E63";
 
   const container = document.getElementById("months");
   container.innerHTML = "";
