@@ -111,7 +111,6 @@ const COMPRAS = [
   { id: "p24", desc: "Panvel", parcelas: 1, valor: 69.99, primeiraFatura: {m:9,y:2026} },
   { id: "p25", desc: "Academia Bem Estar", parcelas: 1, valor: 160.00, primeiraFatura: {m:9,y:2026} },
   { id: "p26", desc: "Farmácia São João", parcelas: 2, valor: 57.38, primeiraFatura: {m:9,y:2026} },
-  { id: "adj1", desc: "Ajuste de reconciliação com app do banco", parcelas: 1, valor: -245.29, primeiraFatura: {m:9,y:2026} },
   { id: "p27", desc: "Olha Ela", parcelas: 4, valor: 112.50, primeiraFatura: {m:9,y:2026} },
   { id: "p28", desc: "Compra mercado (parcelado loja)", parcelas: 2, valor: 222.24, primeiraFatura: {m:9,y:2026} },
   { id: "p29", desc: "Farmácia São João", parcelas: 2, valor: 102.44, primeiraFatura: {m:9,y:2026} },
@@ -128,8 +127,9 @@ const COMPRAS = [
   { id: "p40", desc: "Compra online (aprovada)", parcelas: 2, valor: 184.96, primeiraFatura: {m:9,y:2026} },
   { id: "p41", desc: "Superlegal (brinquedos)", parcelas: 3, valor: 41.66, primeiraFatura: {m:9,y:2026} },
   { id: "p42", desc: "Avaliação Emergencial de Crédito (tarifa)", parcelas: 1, valor: 25.00, primeiraFatura: {m:9,y:2026} },
-  { id: "adj2", desc: "Ajuste de reconciliação com fatura oficial (setembro)", parcelas: 1, valor: 307.10, primeiraFatura: {m:9,y:2026} },
-  { id: "adj3", desc: "Ajuste de reconciliação com fatura oficial (pós-setembro)", parcelas: 1, valor: -172.05, primeiraFatura: {m:10,y:2026} },
+  { id: "p43", desc: "Doces da Tai", parcelas: 1, valor: 61.90, primeiraFatura: {m:9,y:2026} },
+  { id: "adj2", desc: "Ajuste residual de arredondamento (setembro)", parcelas: 1, valor: -0.09, primeiraFatura: {m:9,y:2026} },
+  { id: "adj3", desc: "Ajuste de reconciliação com fatura oficial (pós-setembro, a refinar com próximas faturas)", parcelas: 1, valor: -172.05, primeiraFatura: {m:10,y:2026} },
 ];
 
 const RECORRENTES = [
@@ -144,6 +144,7 @@ const LIMITE_TOTAL = 9200.00;
 const FATURAS_PAGAS = [
   { m: 7, y: 2026 },
   { m: 8, y: 2026 },
+  { m: 9, y: 2026 },
 ];
 
 function isFaturaPaga(mes, ano) {
